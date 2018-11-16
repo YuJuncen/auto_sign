@@ -1,0 +1,4 @@
+getgauge
+requests
+curses-menu
+texttable
