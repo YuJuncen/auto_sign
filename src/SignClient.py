@@ -38,7 +38,7 @@ class SignClient(object):
                  tfactory: AbstractTokenFactory,
                  dev: DeviceInfo,
                  infod: BaseSignInfoServer,
-                 conf = SConf
+                 conf=SConf
                  ):
         self.__conf = conf
         self.__tfactory = tfactory
@@ -69,9 +69,9 @@ class SignClient(object):
         log.debug(f"信息成功刷新。字段：{[k for k in self.__sign_info.keys()]}")
         return 0
 
-    def auto_sign(self, force = False):
+    def auto_sign(self, force=False):
         return run(self.async_auto_sign(force))
-    
+
     def handle_with_data_getter_error(self, err):
         code, info = err
         log.warning(f"获得信息的时候，出现了错误：{info}")
@@ -79,7 +79,6 @@ class SignClient(object):
             self.__token = self.__tfactory.make_token()
             return 4, self.__err_codes[4]
         return 3, info
-
 
     async def make_sign_data(self, bleChoicer: callable = choice):
         """
@@ -103,7 +102,7 @@ class SignClient(object):
             return False
 
         return True
-        
+
     async def safety_delay(self):
         delay_time = random() * 5 + 3
         log.info(f"正在“搜索”蓝牙设备，预计用时 {delay_time}s。")
@@ -132,10 +131,10 @@ class SignClient(object):
         await self.safety_delay()
 
         headers = dict(
-            **self.__conf.get_base_head(), 
+            **self.__conf.get_base_head(),
             **{
-            "token": self.__token
-        })
+                "token": self.__token
+            })
         r = post(self.__conf.get_sign_target(),
                  data=datas,
                  headers=headers)
