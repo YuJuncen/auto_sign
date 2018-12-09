@@ -10,6 +10,7 @@ from .TokenFactory import AbstractTokenFactory
 from .SignInfoServer import BaseSignInfoServer
 from . import core_logger as log
 from .DeviceInfo import DeviceInfo
+from .SignServer import SignServer, csust_server
 
 
 class SignClient(object):
@@ -38,10 +39,10 @@ class SignClient(object):
                  tfactory: AbstractTokenFactory,
                  dev: DeviceInfo,
                  infod: BaseSignInfoServer,
-                 conf=SConf
+                 serv: SignServer = csust_server
                  ):
-        self.__conf = conf
         self.__tfactory = tfactory
+        self.__server = serv
         self.__dev = dev
         self.__infod = infod
         self.__token = self.__tfactory.make_token()
@@ -130,17 +131,9 @@ class SignClient(object):
             log.warning(f"强制在签到时间外签到。")
         await self.safety_delay()
 
-        headers = dict(
-            **self.__conf.get_base_head(),
-            **{
+        return self.__server.sign({
+            "header": {
                 "token": self.__token
-            })
-        r = post(self.__conf.get_sign_target(),
-                 data=datas,
-                 headers=headers)
-        response_json = loads(r.content)
-        if response_json.get("data").get("isSuccess") != "1":
-            log.error(f"签到失败了；原因是：{response_json.get('message') or '不知道。'}")
-            return response_json, (2, f"签到失败，原因是：{response_json.get('message') or '不知道。'}")
-        log.info(f"签到成功；相关数据：{datas}")
-        return None, 0
+            },
+            "data": datas
+        })
